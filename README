@@ -1,0 +1,38 @@
+This is the scenario tool editor created by Ramsey Systems. This is a version of the code which is being merged with the scenario tool viewer.
+
+
+Current Focus:
+- Integration with Frankie's scenario viewer tool
+   - UI for patient and scenario base page design
+   - Dummy functions for key interactive parts
+
+
+BUG FIXES:
+- timeline pop up isn't flexible (very big readability issue)
+
+- Need to fix that the chosen standards dont align with the one in the JSON
+
+
+
+
+
+
+
+
+
+Potential Future Things:
+FUNCTIONALITY
+- add a catch error when the value of dataPath is empty which means that they need to change it
+   - need for them to know something is wrong
+
+- write a little test script for things to test
+
+
+USABILITY
+- move a row around
+- insert below
+
+- be able to deal with incorrect dataPath values
+
+
+
