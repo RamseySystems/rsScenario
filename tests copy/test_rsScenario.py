@@ -66,3 +66,49 @@ class TestScenarioTool(unittest.TestCase):
     
     def test_upload_provenance(self):
         pass
+    
+    def test_upload_continuous_data(self):
+        pass
+    
+    def test_upload_patient(self):
+        pass
+    
+    def test_upload_standard(self):
+        pass
+    
+    def test_del_standard(self):
+        pass
+    
+    def test_standard_path_list(self):
+        pass
+    
+    def test_standards_list(self):
+        pass
+    
+    def test_patient_list(self):
+        pass
+    
+    def test_get_patient(self):
+        pass
+    
+    def test_save_patient(self):
+        pass
+    
+    def test_del_patient(self):
+        pass
+    
+    def test_validate_personae(self):
+        pass
+    
+    def test_render_story(self):
+        pass
+    
+    def test_render_log(self):
+        pass
+    
+    def test_render_data(self):
+        pass
+    
+    def test_compile_website(self):
+        pass
+    
