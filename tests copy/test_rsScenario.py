@@ -1,9 +1,21 @@
-from rsScenario import rsScenario
+import sys
+sys.path.append('../rsScenario')
+
+from rsScenarios import rsScenario
 from google.cloud import storage
 
 import pytest
 import unittest
 import jinja2
+
+'''
+TODO
+- Check for website recompile
+    - maybe check the last modified date of the website
+- finish tests
+- make failing tests
+- run the tests
+'''
 
 class TestScenarioTool(unittest.TestCase):
     def test_init(self):
@@ -62,43 +74,120 @@ class TestScenarioTool(unittest.TestCase):
         self.assertEqual(test_scenario.project_name, "new_diabetes")
         
     def test_del_project(self):
-        pass
+        
+        # test that the del_project function works
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        test_scenario.del_project("new_diabetes")
+        
+        # check the project has been deleted
+        blob = test_scenario.bucket.blob("new_diabetes/")
+        self.assertEqual(blob.exists(), False) 
     
     def test_upload_provenance(self):
-        pass
+        
+        # test that the upload_provenance function works
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        test_scenario.upload_provenance("./upload_provenance/Provenance.xlsx")
+        
+        # check the provenance list is not empty
+        self.assertNotEqual(test_scenario.provenance, [])
+        
     
     def test_upload_continuous_data(self):
-        pass
+        
+        # test that the upload_continuous_data function works
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        test_scenario.upload_continuous_data("./upload_continuous_data/data.csv")
+        
+        # check the continuous data has been uploaded
+        blob = test_scenario.bucket.blob("diabetes/continuous_data/data.csv")
+        self.assertEqual(blob.exists(), True)
     
     def test_upload_patient(self):
-        pass
+        
+        ## make test file
+        # test that the upload_patient function works
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        test_scenario.upload_patient("./upload_patient/patient.json")
+        
+        # check the patient has been uploaded
+        blob = test_scenario.bucket.blob("diabetes/personae/patient.json")
+        self.assertEqual(blob.exists(), True)
     
     def test_upload_standard(self):
-        pass
+        
+        ## make test file
+        # test that the upload_standard function works
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        test_scenario.upload_standard("./upload_standard/standard.json")
+        
+        # check the standard has been uploaded
+        blob = test_scenario.bucket.blob("diabetes/standards/standard.json")
+        self.assertEqual(blob.exists(), True)
     
     def test_del_standard(self):
-        pass
+        
+        ## make test file
+        # test that the del_standard function works
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        test_scenario.del_standard("standard.json")
+        
+        # check the standard has been deleted
+        blob = test_scenario.bucket.blob("diabetes/standards/standard.json")
+        self.assertEqual(blob.exists(), False)
     
     def test_standard_path_list(self):
         pass
     
     def test_standards_list(self):
-        pass
+        
+        # test that the standards_list function works
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        standards = test_scenario.standards_list()
+        self.assertEqual(standards, ["standard.json"])
     
     def test_patient_list(self):
-        pass
+        
+        # test that the patient_list function works
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        patients = test_scenario.patient_list()
+        self.assertEqual(patients, ["patient.json"])
     
     def test_get_patient(self):
         pass
     
     def test_save_patient(self):
-        pass
+        
+        # check the timestamp is updated
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        test_scenario.save_patient("save_patient/patient.json")
+        
+        # check the patient has been uploaded
+        blob = test_scenario.bucket.blob("diabetes/personae/patient.json")
+        self.assertEqual(blob.exists(), True)
+        
+        # check the timestamp has been updated
+        blob = test_scenario.bucket.blob("diabetes/personae/patient.json")
+        self.assertNotEqual(blob.updated, "2021-01-01T00:00:00.000Z")
+        
     
     def test_del_patient(self):
-        pass
+        
+        # test that the del_patient function works
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        test_scenario.del_patient("patient.json")
+        
+        # check the patient has been deleted
+        blob = test_scenario.bucket.blob("diabetes/personae/patient.json")
+        self.assertEqual(blob.exists(), False)
     
     def test_validate_personae(self):
-        pass
+        
+        ## check that the personae is valid. Make failing case
+        # test that the validate_personae function works
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        test_scenario.validate_personae()
+        self.assertEqual(test_scenario.validated, True)
     
     def test_render_story(self):
         pass
@@ -112,3 +201,7 @@ class TestScenarioTool(unittest.TestCase):
     def test_compile_website(self):
         pass
     
+
+
+if __name__ == '__main__':
+    unittest.main()

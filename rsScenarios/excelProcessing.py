@@ -2,7 +2,7 @@ import os
 import re
 from flask import flash
 import openpyxl
-from functions import usefulFunctions as uf
+import usefulFunctions as uf
 import csv
 import json
 import shutil

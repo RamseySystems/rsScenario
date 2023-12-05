@@ -266,7 +266,7 @@ class ScenarioTool:
         
         return
     
-    def delete_standard(self, standard_file_name: str) -> None:
+    def del_standard(self, standard_file_name: str) -> None:
         '''
         A function to delete a standard from the standards directory
         Removes path list for standard
@@ -338,7 +338,7 @@ class ScenarioTool:
         
         return standard_fles
     
-    def patient(self, patient_name: str) -> dict:
+    def get_patient(self, patient_name: str) -> dict:
         '''
         A function to return a patient storylog from the personae directory
         
@@ -768,6 +768,7 @@ class ScenarioTool:
                     
                     # render data
                     self.render_data(personae_name, personae_data_object, event_name)
+                
             
         return
 
