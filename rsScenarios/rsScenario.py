@@ -5,7 +5,7 @@ from io import BytesIO
 import json
 import os
 import openpyxl
-import excelProcessing as ep
+from rsScenarios import excelProcessing as ep
 
 '''
 TODO MAIN:
@@ -13,7 +13,7 @@ TODO MAIN:
 - look at where to error handle
 
 TODO NOW:
-- save the templates to the website directory (this is done in the render functions but move it out to make for easier testing)
+- Correctly use the iterator 
 '''
 
 
@@ -58,6 +58,25 @@ class ScenarioTool:
         self.storage_client = storage.Client()
         self.provenance = []
         
+        # check folder exists
+        self.bucket = self.storage_client.bucket(self.gcp_project)
+        blobs = self.bucket.list_blobs(prefix=self.gcp_project)
+        folders = set()
+        
+        for blob in blobs:
+            folder = blob.name.split('/')[1]      
+            folders.add(folder)
+            
+        if self.project_name not in folders:
+            print('Project folder does not exist')
+            print('Creating project folder...')
+            self.bucket = self.storage_client.create_bucket(self.gcp_project)
+            self.bucket.blob(f'{self.gcp_project}/{project_name}/standards/')
+            self.bucket.blob(f'{self.gcp_project}/{project_name}/personae/')
+            self.bucket.blob(f'{self.gcp_project}/{project_name}/continuous_data/')
+            self.bucket.blob(f'{self.gcp_project}/{project_name}/website/')
+            print('Project folder created')
+
         # initiate a template environment
         this_file_dir = os.path.dirname(os.path.abspath(__file__))
         parent_dir = this_file_dir[:this_file_dir.rfind('/')]

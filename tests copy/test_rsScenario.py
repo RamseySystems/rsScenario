@@ -2,7 +2,7 @@ import datetime
 import sys
 sys.path.append('../rsScenario')
 
-from rsScenarios import rsScenario
+from rsScenarios.rsScenario import ScenarioTool as rsScenario
 from google.cloud import storage
 
 import pytest

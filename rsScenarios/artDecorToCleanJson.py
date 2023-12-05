@@ -2,7 +2,7 @@ import html
 import json
 import re
 import os
-import usefulFunctions as fn
+from rsScenarios import usefulFunctions as fn
 
 
 def generate_schema(instance: dict):
