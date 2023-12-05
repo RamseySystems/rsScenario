@@ -1,3 +1,4 @@
+import datetime
 import sys
 sys.path.append('../rsScenario')
 
@@ -199,9 +200,18 @@ class TestScenarioTool(unittest.TestCase):
         pass
     
     def test_compile_website(self):
-        pass
-    
-
+        
+        # get current last modified date of the website folder
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        blob = test_scenario.bucket.blob("diabetes/")
+        last_modified = blob.updated
+        
+        # compile the website
+        test_scenario.compile_website()
+        
+        # check the last modified date has been updated
+        blob = test_scenario.bucket.blob("diabetes/")
+        self.assertNotEqual(blob.updated, last_modified)
 
 if __name__ == '__main__':
     unittest.main()
