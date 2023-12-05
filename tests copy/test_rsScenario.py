@@ -11,11 +11,9 @@ import jinja2
 
 '''
 TODO
-- Check for website recompile
-    - maybe check the last modified date of the website
 - finish tests
-- make failing tests
-- run the tests
+    - Run tests and get them passing
+    - Make failing cases
 '''
 
 class TestScenarioTool(unittest.TestCase):
