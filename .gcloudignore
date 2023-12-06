@@ -17,3 +17,4 @@
 __pycache__/
 # Ignored by the build system
 /setup.cfg
+my_key_scenario_tool_gcp.json

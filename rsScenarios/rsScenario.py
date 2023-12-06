@@ -52,6 +52,11 @@ class ScenarioTool:
             super().__init__(self.message)
 
     def __init__(self, project_name, gcp_site):
+        CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+        PARENT_DIR = os.path.dirname(CURRENT_DIR)
+        credentials_path = os.path.join(PARENT_DIR, 'my_key_scenario_tool_gcp.json')
+        print('Credentials path: ' + credentials_path)
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
         self.project_name = project_name.lower()
         self.gcp_project = gcp_site
         self.validated = False
@@ -79,11 +84,16 @@ class ScenarioTool:
         if self.project_name not in folders:
             print('Project folder does not exist')
             print('Creating project folder...')
-            self.bucket = self.storage_client.create_bucket(self.gcp_project)
-            self.bucket.blob(f'{self.gcp_project}/{project_name}/standards/')
-            self.bucket.blob(f'{self.gcp_project}/{project_name}/personae/')
-            self.bucket.blob(f'{self.gcp_project}/{project_name}/continuous_data/')
-            self.bucket.blob(f'{self.gcp_project}/{project_name}/website/')
+            blob = self.bucket.blob(f'{self.project_name}/')
+            blob.upload_from_string('')
+            blob = self.bucket.blob(f'{project_name}/standards/')
+            blob.upload_from_string('')
+            blob = self.bucket.blob(f'{project_name}/personae/')
+            blob.upload_from_string('')
+            blob = self.bucket.blob(f'{self.gcp_project}/{project_name}/continuous_data/')
+            blob.upload_from_string('')
+            blob = self.bucket.blob(f'{self.gcp_project}/{project_name}/website/')
+            blob.upload_from_string('')
             print('Project folder created')
 
         # initiate a template environment
@@ -95,6 +105,14 @@ class ScenarioTool:
         self.bucket = self.storage_client.bucket(self.gcp_project)
         
     def copy_project(self, project_name:str, new_project_name: str) -> None:
+        
+        # make new folder
+        try:
+            blob = self.bucket.blob(new_project_name)
+            blob.upload_from_string('')
+        except Exception as e:
+            raise Exception(f"Error creating new project folder: {e} /n Folder already exists")
+            
         blobs = self.bucket.list_blobs(prefix=project_name)
         for blob in blobs:
             # Construct the destination object name
