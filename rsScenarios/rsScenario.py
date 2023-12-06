@@ -60,9 +60,9 @@ class ScenarioTool:
         self.project_name = project_name.lower()
         self.gcp_project = gcp_site
         self.validated = False
-        self.standard_dir = f'{gcp_site}/{project_name}/standards'
-        self.personae_dir = f'{gcp_site}/{project_name}/personae'
-        self.continuous_data_dir = f'{gcp_site}/{project_name}/continuous_data'
+        self.standard_dir = f'{project_name}/standards'
+        self.personae_dir = f'{project_name}/personae'
+        self.continuous_data_dir = f'{project_name}/continuous_data'
         self.storage_client = storage.Client()
         self.provenance = []
         
@@ -90,9 +90,9 @@ class ScenarioTool:
             blob.upload_from_string('')
             blob = self.bucket.blob(f'{project_name}/personae/')
             blob.upload_from_string('')
-            blob = self.bucket.blob(f'{self.gcp_project}/{project_name}/continuous_data/')
+            blob = self.bucket.blob(f'{project_name}/continuous_data/')
             blob.upload_from_string('')
-            blob = self.bucket.blob(f'{self.gcp_project}/{project_name}/website/')
+            blob = self.bucket.blob(f'{project_name}/website/')
             blob.upload_from_string('')
             print('Project folder created')
 
@@ -108,7 +108,7 @@ class ScenarioTool:
         
         # make new folder
         try:
-            blob = self.bucket.blob(new_project_name)
+            blob = self.bucket.blob(f'{new_project_name}/')
             blob.upload_from_string('')
         except Exception as e:
             raise Exception(f"Error creating new project folder: {e} /n Folder already exists")
@@ -125,12 +125,19 @@ class ScenarioTool:
         return
     
     def list_projects(self) -> list:
-        blobs = self.bucket.list_blobs(prefix=self.gcp_project)
+        blobs = self.bucket.list_blobs()
         folders = set()
-        for blob in blobs:
-            folder = blob.name.split('/')[1]      
-            folders.add(folder)
-        
+        while True:
+            try:
+                blob = next(blobs)
+                blob_name = blob.name
+                if '/' in blob_name:
+                    folder = blob_name.split('/')[0]
+                    folders.add(folder)
+            except StopIteration:
+                break
+
+
         return list(folders)
     
     def set_project(self, new_project_name: str) -> None:
@@ -141,23 +148,26 @@ class ScenarioTool:
         
         return
     
-    def del_project(self) -> None:
+    def del_project(self, project) -> None:
         # Delete all blobs in the project folder
-        blobs = self.bucket.list_blobs(prefix=f'{self.gcp_project}/{self.project_name}')
-        for blob in blobs:
-            blob.delete()
+        blobs = self.bucket.list_blobs(prefix=f'{project}/')
+        while True:
+            try:
+                blob = next(blobs)
+                blob.delete()
+            except StopIteration:
+                break
 
-        # Delete the project folder
-        self.bucket.delete_blob(f'{self.gcp_project}/{self.project_name}')
-        print(f"Project {self.project_name} deleted")
-
-        # Reset project attributes
-        self.project_name = None
-        self.standard_dir = None
-        self.personae_dir = None
-        self.continuous_data_dir = None
-        self.validated = False
-        self.provenance = []
+        print(f"Project {project} deleted")
+        
+        if project == self.project_name:
+            # Reset project attributes
+            self.project_name = None
+            self.standard_dir = None
+            self.personae_dir = None
+            self.continuous_data_dir = None
+            self.validated = False
+            self.provenance = []
 
         return
         
@@ -167,18 +177,40 @@ class ScenarioTool:
         Re-create all path lists
         Re-validate personae
         
+        
         :param file_path: The path to the provenance file to upload
         :return: None
+        
+        TODO:
+        - Need to upload some standards to test/standards
+        - Make sure the standards path list is recreated and the personae are revalidated
+            - ask Charlie as may not need to as there will be a test for that method anyway
         '''
         # get path list
         provenance_paths = ep.get_standard_paths(file_path, [], False)
         provenance_paths_json_data = json.dumps(provenance_paths)
         self.provenance = provenance_paths
+
+        '''
+        # loop over the standards and re-create path lists
+        # Get the list of blobs in the standards directory
+        blobs = self.bucket.list_blobs(prefix=self.standard_dir)
         
-        # upload json string to provenance.json file
-        blob = self.bucket.blob(f'{self.standard_dir}/provenance.json')
-        blob.upload_from_string(provenance_paths_json_data)
-        print(f"File {file_path} uploaded to {self.standard_dir}")
+        while True:
+            try:
+                blob = next(blobs)
+                file_name = blob.name.split('/')[-1]
+                if file_name.endswith('.xlsx'):
+                    standard_paths = ep.get_standard_paths(blob.name, self.provenance, False)
+                    
+                    # save to the standarsds directory
+                    file_name = file_name.replace('.xlsx', '.json')
+                    standard_paths_json_data = json.dumps(standard_paths)
+                    blob = self.bucket.blob(f'{self.standard_dir}/{file_name}')
+                    blob.upload_from_string(standard_paths_json_data)
+            except StopIteration:
+                break
+        
         
         # make path list json
         standard_paths = ep.get_standard_paths(file_path, self.provenance, False)
@@ -204,6 +236,8 @@ class ScenarioTool:
             false_paths_json_data = json.dumps(false_paths)
             blob = self.bucket.blob(f'{self.personae_dir}/{file_name.replace(".xlsx", ".falsepaths.json")}')
             blob.upload_from_string(false_paths_json_data)
+            
+        '''
 
         return
     
@@ -370,9 +404,18 @@ class ScenarioTool:
         
         :return: A list of standards in the standards directory
         '''
-        standard_fles = [blob.name for blob in self.bucket.list_blobs(prefix=f'{self.project_name}/standards/') if blob.name.endswith('.xlsx')]
-        
-        return standard_fles
+        blobs = self.bucket.list_blobs(prefix=self.standard_dir)
+        standard_list = set()
+        while True:
+            try:
+                blob = next(blobs)
+                blob_name = blob.name.replace('.xlsx', '').replace('.json', '').split('/')[-1]
+                if blob_name != '':
+                    standard_list.add(blob_name)
+            except StopIteration:
+                break
+
+        return list(standard_list)
     
     def patient_list(self) -> list:
         '''
@@ -380,9 +423,18 @@ class ScenarioTool:
         
         :return: A list of patients in the personae directory
         '''
-        standard_fles = [blob.name for blob in self.bucket.list_blobs(prefix=f'{self.project_name}/personae/')]
-        
-        return standard_fles
+        blobs = self.bucket.list_blobs(prefix=self.personae_dir)
+        personae_list = set()
+        while True:
+            try:
+                blob = next(blobs)
+                blob_name = blob.name.replace('.xlsx', '').replace('.json', '').split('/')[-1]
+                if blob_name != '':
+                    personae_list.add(blob_name)
+            except StopIteration:
+                break
+    
+        return list(personae_list)
     
     def get_patient(self, patient_name: str) -> dict:
         '''

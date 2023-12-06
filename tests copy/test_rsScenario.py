@@ -2,6 +2,7 @@ import datetime
 import sys
 sys.path.append('../rsScenario')
 
+from collections import Counter
 from rsScenarios.rsScenario import ScenarioTool as rsScenario
 from google.cloud import storage
 
@@ -25,9 +26,9 @@ class TestScenarioTool(unittest.TestCase):
         self.assertEqual(test_scenario.project_name, "test2")
         self.assertEqual(test_scenario.gcp_project, "sites.ramseysystems.co.uk")
         self.assertEqual(test_scenario.validated, False)
-        self.assertEqual(test_scenario.standard_dir, "sites.ramseysystems.co.uk/test2/standards")
-        self.assertEqual(test_scenario.personae_dir, "sites.ramseysystems.co.uk/test2/personae")
-        self.assertEqual(test_scenario.continuous_data_dir, "sites.ramseysystems.co.uk/test2/continuous_data")
+        self.assertEqual(test_scenario.standard_dir, "test2/standards")
+        self.assertEqual(test_scenario.personae_dir, "test2/personae")
+        self.assertEqual(test_scenario.continuous_data_dir, "test2/continuous_data")
         #self.assertIsInstance(test_scenario.storage_client, storage.Client())
         self.assertEqual(test_scenario.provenance, [])
         #self.assertIsInstance(test_scenario.template_env, jinja2.Environment)
@@ -47,36 +48,56 @@ class TestScenarioTool(unittest.TestCase):
         original_blobs = test_scenario.bucket.list_blobs(prefix="test/")
         new_blobs = test_scenario.bucket.list_blobs(prefix="new_test/")
         
-        # check they are the same length
-        self.assertEqual(len(list(original_blobs)), len(list(new_blobs)))
+        original_files = []
+        origional_file_sizes = {}
+        while True:
+            try:
+                blob = next(original_blobs)
+                blob_name = blob.name
+                origional_file_sizes[blob_name] = blob.size
+                original_files.append(blob_name)
+            except StopIteration:
+                break
+            
+        new_files = []
+        new_file_sizes = {}
+        while True:
+            try:
+                blob = next(new_blobs)
+                blob_name = blob.name
+                new_file_sizes[blob_name] = blob.size
+                new_files.append(blob_name)
+            except StopIteration:
+                break
         
-        original_files = {blob.name: blob.size for blob in original_blobs}
-        new_files = {blob.name: blob.size for blob in new_blobs}
-
+        
+        # check they are the same length
+        self.assertEqual(len(original_files), len(list(new_files)))
+        
         # Ckeck the content and their sizes are the same
-        for filename in original_files:
+        for filename in origional_file_sizes:
             new_filename = filename.replace("test", "new_test")
-            self.assertTrue(new_filename in new_files)
-            self.assertEqual(original_files[filename], new_files[new_filename])
+            self.assertTrue(new_filename in new_file_sizes)
+            self.assertEqual(origional_file_sizes[filename], new_file_sizes[new_filename])
             
     def test_list_projects(self):
 
         # test that the list_projects function works
         test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
         projects = test_scenario.list_projects()
-        self.assertEqual(projects, ["test"])
+        self.assertEqual(Counter(projects), Counter(["test", "Frankie", "diabetes", "false_folder", "new_test", "website_contents", "woundcare"]))
         
     def test_set_project(self):
 
         # test that the set_project function works
-        test_scenario = rsScenario("test", "sites.ramseysystems")
+        test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
         test_scenario.set_project("new_test")
         self.assertEqual(test_scenario.project_name, "new_test")
         
     def test_del_project(self):
         
         # test that the del_project function works
-        test_scenario = rsScenario("test", "sites.ramseysystems")
+        test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
         test_scenario.del_project("new_test")
         
         # check the project has been deleted
@@ -86,8 +107,8 @@ class TestScenarioTool(unittest.TestCase):
     def test_upload_provenance(self):
         
         # test that the upload_provenance function works
-        test_scenario = rsScenario("test", "sites.ramseysystems")
-        test_scenario.upload_provenance("./upload_provenance/Provenance.xlsx")
+        test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
+        test_scenario.upload_provenance("/Users/frankiehadwick/Documents/PRSB/rsScenario/tests copy/upload_provenance/Provenance.xlsx")
         
         # check the provenance list is not empty
         self.assertNotEqual(test_scenario.provenance, [])
@@ -96,7 +117,7 @@ class TestScenarioTool(unittest.TestCase):
     def test_upload_continuous_data(self):
         
         # test that the upload_continuous_data function works
-        test_scenario = rsScenario("test", "sites.ramseysystems")
+        test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
         test_scenario.upload_continuous_data("./upload_continuous_data/data.csv")
         
         # check the continuous data has been uploaded
@@ -126,11 +147,16 @@ class TestScenarioTool(unittest.TestCase):
         self.assertEqual(blob.exists(), True)
     
     def test_del_standard(self):
+        '''
+        TODO
+        - upload a standard first and delete
+            - need to solve the problem with what comes first the provenance or the standard
+        '''
         
         ## make test file
         # test that the del_standard function works
-        test_scenario = rsScenario("test", "sites.ramseysystems")
-        test_scenario.del_standard("standard.json")
+        test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
+        test_scenario.del_standard("Personal details.xlsx")
         
         # check the standard has been deleted
         blob = test_scenario.bucket.blob("test/standards/standard.json")
@@ -149,9 +175,9 @@ class TestScenarioTool(unittest.TestCase):
     def test_patient_list(self):
         
         # test that the patient_list function works
-        test_scenario = rsScenario("test", "sites.ramseysystems")
+        test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
         patients = test_scenario.patient_list()
-        self.assertEqual(patients, ["patient.json"])
+        self.assertEqual(patients, ["Alicia"])
     
     def test_get_patient(self):
         pass
