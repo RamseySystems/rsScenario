@@ -8,6 +8,7 @@ from google.cloud import storage
 import pytest
 import unittest
 import jinja2
+import os
 
 '''
 TODO
@@ -20,17 +21,17 @@ class TestScenarioTool(unittest.TestCase):
     def test_init(self):
 
         # test that the init function works
-        test_scenario = rsScenario("Diabetes", "sites.ramseysystems")
+        test_scenario = rsScenario("Diabetes", "sites.ramseysystems.co.uk")
         self.assertEqual(test_scenario.project_name, "diabetes")
-        self.assertEqual(test_scenario.gcp_project, "sites.ramseysystems")
+        self.assertEqual(test_scenario.gcp_project, "sites.ramseysystems.co.uk")
         self.assertEqual(test_scenario.validated, False)
-        self.assertEqual(test_scenario.standard_dir, "sites.ramseysystems/diabetes/standards")
-        self.assertEqual(test_scenario.personae_dir, "sites.ramseysystems/diabetes/personae")
-        self.assertEqual(test_scenario.continuous_data_dir, "sites.ramseysystems/diabetes/continuous_data")
-        self.assertEqual(test_scenario.storage_client, storage.Client())
+        self.assertEqual(test_scenario.standard_dir, "sites.ramseysystems.co.uk/diabetes/standards")
+        self.assertEqual(test_scenario.personae_dir, "sites.ramseysystems.co.uk/diabetes/personae")
+        self.assertEqual(test_scenario.continuous_data_dir, "sites.ramseysystems.co.uk/diabetes/continuous_data")
+        self.assertIsInstance(test_scenario.storage_client, storage.Client())
         self.assertEqual(test_scenario.provenance, [])
-        self.assertIsInstance(test_scenario.template_env, jinja2.Environment) # how do i test this is right. Do i check the class type?
-        self.assertEqual(test_scenario.bucket, test_scenario.storage_client.get_bucket("sites.ramseysystems"))
+        self.assertIsInstance(test_scenario.template_env, jinja2.Environment)
+        self.assertEqual(test_scenario.bucket, test_scenario.storage_client.get_bucket("sites.ramseysystems.co.uk"))
         
     def test_copy_project(self):
 
@@ -212,4 +213,9 @@ class TestScenarioTool(unittest.TestCase):
         self.assertNotEqual(blob.updated, last_modified)
 
 if __name__ == '__main__':
+    CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+    PARENT_DIR = os.path.dirname(CURRENT_DIR)
+    credentials_path = os.path.join(PARENT_DIR, 'my_key_scenario_tool_gcp.json')
+    print('Credentials path: ' + credentials_path)
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
     unittest.main()

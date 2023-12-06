@@ -19,6 +19,7 @@ TODO NOW:
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = os.path.join(CURRENT_DIR, 'my_key_scenario_tool_gcp.json')
 
+
 class ScenarioTool:
     class MissingProvenanceError(Exception):
         def __init__(self, message, project):
