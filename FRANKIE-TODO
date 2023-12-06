@@ -3,7 +3,9 @@ TODO:
 CODE
 - Function to create standard path lists
 - Function to validate the personae
- 
+- On standard upload, if no provenance, do not make path lists or validate
+  On provenance upload if no standard, do not make path lists or validate
+
 TESTS
 - save_patient
 - validate_personae
