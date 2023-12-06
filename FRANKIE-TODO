@@ -1,0 +1,25 @@
+TODO:
+
+CODE
+- Function to create standard path lists
+- Function to validate the personae
+ 
+TESTS
+- save_patient
+- validate_personae
+- standard_path_list
+- get_patient
+- render_story
+- render_log
+- render_data
+- compile_website
+
+ORGANISATION
+- Re-order tests like
+  - init
+  - uploads
+  - saves
+  - renders
+  - compilele
+  - validation
+  - deletion
