@@ -269,6 +269,8 @@ class ScenarioTool:
         blob.upload_from_filename(file_path)
         print(f"File {file_path} uploaded to {self.personae_dir}")
         
+        '''
+        
         # loop over personae and validate
         # Get the list of blobs in the personae directory
         blobs = self.bucket.list_blobs(prefix=self.personae_dir)
@@ -292,6 +294,8 @@ class ScenarioTool:
             
         print("Personae validated, storylogs created")
         
+        '''
+        
         return
 
     def upload_standard(self, file_path: str) -> None:
@@ -303,13 +307,15 @@ class ScenarioTool:
         :param file_path: The path to the standard xlsx file to upload
         :return: None
         '''
-        if self.provenance == []:
-            raise self.MissingProvenanceError(self.provenance, self.project_name)
-        
+
         # upload file
         file_name = os.path.basename(file_path)
         blob = self.bucket.blob(f'{self.standard_dir}/{file_name}')
         blob.upload_from_filename(file_path)
+        
+        print(f"{file_name} uploaded to standards directory")
+        
+        '''
         
         # make path list json
         standard_paths = ep.get_standard_paths(file_path, self.provenance, False)
@@ -344,6 +350,8 @@ class ScenarioTool:
         print(f"File {file_path} uploaded to {self.standard_dir}")
         print("Personae validated")
         
+        '''
+        
         return
     
     def del_standard(self, standard_file_name: str) -> None:
@@ -357,7 +365,8 @@ class ScenarioTool:
         blob = self.bucket.blob(f'{self.standard_dir}/{standard_file_name}')
         blob.delete()
         print(f"File {standard_file_name} deleted from {self.standard_dir}")
-        
+       
+        '''
         # loop over personae and validate
         # Get the list of blobs in the personae directory
         blobs = self.bucket.list_blobs(prefix=self.personae_dir)
@@ -380,6 +389,8 @@ class ScenarioTool:
             blob.upload_from_string(storylog_json_data)
 
         print("Personae validated")
+        
+        '''
         
         return
     
@@ -468,7 +479,8 @@ class ScenarioTool:
         blob = self.bucket.blob(f'{self.personae_dir}/{patient_name}.json')
         blob.upload_from_string(patient_string)
         print(f"File {patient_name}.json uploaded to {self.personae_dir}")
-        
+       
+        '''
         # validate patient
         # loop over personae and validate
         # Get the list of blobs in the personae directory
@@ -496,6 +508,8 @@ class ScenarioTool:
         # re-compile website
         self.compile_website()
 
+        '''
+
         return
     
     def del_patient(self, patient_name: str) -> None:
@@ -507,7 +521,7 @@ class ScenarioTool:
         :return: None
         '''
         # delete patient file
-        blob = self.bucket.blob(f'{self.personae_dir}/{patient_name}.json')
+        blob = self.bucket.blob(f'{self.personae_dir}/{patient_name}')
         blob.delete()
         print(f"File {patient_name}.json deleted from {self.personae_dir}")
         

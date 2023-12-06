@@ -85,7 +85,7 @@ class TestScenarioTool(unittest.TestCase):
         # test that the list_projects function works
         test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
         projects = test_scenario.list_projects()
-        self.assertEqual(Counter(projects), Counter(["test", "Frankie", "diabetes", "false_folder", "new_test", "website_contents", "woundcare"]))
+        self.assertEqual(Counter(projects), Counter(["test", "Frankie", "diabetes", "false_folder", "test2", "website_contents", "woundcare"]))
         
     def test_set_project(self):
 
@@ -118,7 +118,7 @@ class TestScenarioTool(unittest.TestCase):
         
         # test that the upload_continuous_data function works
         test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
-        test_scenario.upload_continuous_data("./upload_continuous_data/data.csv")
+        test_scenario.upload_continuous_data("/Users/frankiehadwick/Documents/PRSB/rsScenario/tests copy/upload_continuous_data/data.csv")
         
         # check the continuous data has been uploaded
         blob = test_scenario.bucket.blob("test/continuous_data/data.csv")
@@ -128,22 +128,22 @@ class TestScenarioTool(unittest.TestCase):
         
         ## make test file
         # test that the upload_patient function works
-        test_scenario = rsScenario("test", "sites.ramseysystems")
-        test_scenario.upload_patient("./upload_patient/patient.json")
+        test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
+        test_scenario.upload_patient("/Users/frankiehadwick/Documents/PRSB/rsScenario/tests copy/upload_patient/Betty wound care.xlsx")
         
         # check the patient has been uploaded
-        blob = test_scenario.bucket.blob("test/personae/patient.json")
+        blob = test_scenario.bucket.blob("test/personae/Betty wound care.xlsx")
         self.assertEqual(blob.exists(), True)
     
     def test_upload_standard(self):
         
         ## make test file
         # test that the upload_standard function works
-        test_scenario = rsScenario("test", "sites.ramseysystems")
-        test_scenario.upload_standard("./upload_standard/standard.json")
+        test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
+        test_scenario.upload_standard("/Users/frankiehadwick/Documents/PRSB/rsScenario/tests copy/upload_standard/Personal details.xlsx")
         
         # check the standard has been uploaded
-        blob = test_scenario.bucket.blob("test/standards/standard.json")
+        blob = test_scenario.bucket.blob("test/standards/Personal details.xlsx")
         self.assertEqual(blob.exists(), True)
     
     def test_del_standard(self):
@@ -156,6 +156,7 @@ class TestScenarioTool(unittest.TestCase):
         ## make test file
         # test that the del_standard function works
         test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
+        test_scenario.upload_standard('/Users/frankiehadwick/Documents/PRSB/rsScenario/tests copy/upload_standard/Personal details.xlsx')
         test_scenario.del_standard("Personal details.xlsx")
         
         # check the standard has been deleted
@@ -168,9 +169,10 @@ class TestScenarioTool(unittest.TestCase):
     def test_standards_list(self):
         
         # test that the standards_list function works
-        test_scenario = rsScenario("test", "sites.ramseysystems")
+        test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
+        test_scenario.upload_standard("/Users/frankiehadwick/Documents/PRSB/rsScenario/tests copy/upload_standard/Personal details.xlsx")
         standards = test_scenario.standards_list()
-        self.assertEqual(standards, ["standard.json"])
+        self.assertEqual(standards, ["Personal details"])
     
     def test_patient_list(self):
         
@@ -180,7 +182,11 @@ class TestScenarioTool(unittest.TestCase):
         self.assertEqual(patients, ["Alicia"])
     
     def test_get_patient(self):
-        pass
+        
+        # test that the get_patient function works
+        test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
+        patient = test_scenario.get_patient("Alicia")
+        self.assertEqual(patient["name"], "Alicia")
     
     def test_save_patient(self):
         
@@ -200,11 +206,11 @@ class TestScenarioTool(unittest.TestCase):
     def test_del_patient(self):
         
         # test that the del_patient function works
-        test_scenario = rsScenario("test", "sites.ramseysystems")
-        test_scenario.del_patient("patient.json")
+        test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
+        test_scenario.del_patient("Betty wound care.xlsx")
         
         # check the patient has been deleted
-        blob = test_scenario.bucket.blob("test/personae/patient.json")
+        blob = test_scenario.bucket.blob("test/personae/Betty wound care.xlsx")
         self.assertEqual(blob.exists(), False)
     
     def test_validate_personae(self):
@@ -216,13 +222,14 @@ class TestScenarioTool(unittest.TestCase):
         self.assertEqual(test_scenario.validated, True)
     
     def test_render_story(self):
-        pass
+        assert False
+
     
     def test_render_log(self):
-        pass
+        assert False
     
     def test_render_data(self):
-        pass
+        assert False
     
     def test_compile_website(self):
         
