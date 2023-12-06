@@ -16,6 +16,8 @@ TODO NOW:
 - Correctly use the iterator 
 '''
 
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = os.path.join(CURRENT_DIR, 'my_key_scenario_tool_gcp.json')
 
 class ScenarioTool:
     class MissingProvenanceError(Exception):
@@ -60,12 +62,18 @@ class ScenarioTool:
         
         # check folder exists
         self.bucket = self.storage_client.bucket(self.gcp_project)
-        blobs = self.bucket.list_blobs(prefix=self.gcp_project)
+        blobs = self.bucket.list_blobs()
         folders = set()
         
-        for blob in blobs:
-            folder = blob.name.split('/')[1]      
-            folders.add(folder)
+        while True:
+            try:
+                blob = next(blobs)
+                blob_name = blob.name
+                if '/' in blob_name:
+                    folder = blob_name.split('/')[0]
+                    folders.add(folder)
+            except StopIteration:
+                break
             
         if self.project_name not in folders:
             print('Project folder does not exist')
