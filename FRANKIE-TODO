@@ -5,6 +5,7 @@ CODE
 - Function to validate the personae
 - On standard upload, if no provenance, do not make path lists or validate
   On provenance upload if no standard, do not make path lists or validate
+- Make tests work simultaniously
 
 TESTS
 - save_patient
