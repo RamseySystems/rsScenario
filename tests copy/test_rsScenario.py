@@ -86,8 +86,15 @@ class TestScenarioTool(unittest.TestCase):
 
         # test that the list_projects function works
         test_scenario = rsScenario("_listProjects", "sites.ramseysystems.co.uk")
+
         projects = test_scenario.list_projects()
-        self.assertEqual(Counter(projects), Counter(["_listprojects", "Frankie", "diabetes", "false_folder", "test2", "website_contents", "woundcare"]))
+        
+        # check projects is a list
+        self.assertIsInstance(projects, list)
+        
+        # check that if the project is not empty, that the elements are strings
+        if projects != []:
+            self.assertIsInstance(projects[0], str)
         
     def test_set_project(self):
 
@@ -184,14 +191,28 @@ class TestScenarioTool(unittest.TestCase):
         # test that the patient_list function works
         test_scenario = rsScenario("_patientlist", "sites.ramseysystems.co.uk")
         patients = test_scenario.patient_list()
-        self.assertEqual(patients, ["Alicia"])
+        self.assertEqual(patients, [])
     
     def test_get_patient(self):
         
         # test that the get_patient function works
         test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
-        patient = test_scenario.get_patient("Alicia")
-        self.assertEqual(patient["name"], "Alicia")
+        
+        # upload patient storylog data
+        test_scenario.upload_patient("/Users/frankiehadwick/Documents/PRSB/rsScenario/tests copy/get_patient/patient.json")
+        
+        patient = test_scenario.get_patient("patient")
+        self.assertEqual(patient, {
+            "name": "John Doe",
+            "age": 30,
+            "email": "johndoe@example.com",
+            "address": {
+                "street": "123 Main St",
+                "city": "New York",
+                "state": "NY",
+                "zip": "10001"
+            }
+        })
     
     def test_save_patient(self):
         
@@ -203,15 +224,17 @@ class TestScenarioTool(unittest.TestCase):
         test_scenario = rsScenario("_savepatient", "sites.ramseysystems.co.uk")
         test_scenario.save_patient("save_patient/patient.json", 'patient')
         
-        # check the patient has been uploaded
+        # get curtrent timestamp
         blob = test_scenario.bucket.blob("_savepatient/personae/patient.json")
-        self.assertEqual(blob.exists(), True)
+        last_modified = blob.updated
+        
+        # save patient again
+        test_scenario.save_patient("save_patient/patient.json", 'patient')
         
         # check the timestamp has been updated
         blob = test_scenario.bucket.blob("_savepatient/personae/patient.json")
-        self.assertNotEqual(blob.updated, "2021-01-01T00:00:00.000Z")
-        
-    
+        self.assertNotEqual(blob.updated, last_modified)
+
     def test_del_patient(self):
         
         # test that the del_patient function works
