@@ -222,27 +222,60 @@ class TestScenarioTool(unittest.TestCase):
         
         # check the timestamp is updated
         test_scenario = rsScenario("_savepatient", "sites.ramseysystems.co.uk")
-        test_scenario.save_patient("save_patient/patient.json", 'patient')
+        test_scenario.save_patient({
+            "name": "John Doe",
+            "age": 30,
+            "email": "johndoe@example.com",
+            "address": {
+                "street": "123 Main St",
+                "city": "New York",
+                "state": "NY",
+                "zip": "10001"
+            }
+        }, 'test_patient')
         
         # get curtrent timestamp
-        blob = test_scenario.bucket.blob("_savepatient/personae/patient.json")
+        blob = test_scenario.bucket.blob("_savepatient/personae/test_patient.json")
+        blob.reload()
         last_modified = blob.updated
         
         # save patient again
-        test_scenario.save_patient("save_patient/patient.json", 'patient')
+        test_scenario.save_patient({
+            "name": "John Doe",
+            "age": 31,
+            "email": "johndoe@example.com",
+            "address": {
+                "street": "123 Main St",
+                "city": "New York",
+                "state": "NY",
+                "zip": "10001"
+            }
+        }, 'test_patient')
         
         # check the timestamp has been updated
-        blob = test_scenario.bucket.blob("_savepatient/personae/patient.json")
+        blob = test_scenario.bucket.blob("_savepatient/personae/test_patient.json")
+        blob.reload()
         self.assertNotEqual(blob.updated, last_modified)
 
     def test_del_patient(self):
         
         # test that the del_patient function works
         test_scenario = rsScenario("_delpatient", "sites.ramseysystems.co.uk")
-        test_scenario.del_patient("Betty wound care.xlsx")
+        test_scenario.save_patient({
+            "name": "John Doe",
+            "age": 31,
+            "email": "johndoe@example.com",
+            "address": {
+                "street": "123 Main St",
+                "city": "New York",
+                "state": "NY",
+                "zip": "10001"
+            }
+        }, 'test_patient')
+        test_scenario.del_patient("test_patient.json")
         
         # check the patient has been deleted
-        blob = test_scenario.bucket.blob("_delpatient/personae/Betty wound care.xlsx")
+        blob = test_scenario.bucket.blob("_delpatient/personae/test_patient.json")
         self.assertEqual(blob.exists(), False)
     
     def test_validate_personae(self):
@@ -266,18 +299,41 @@ class TestScenarioTool(unittest.TestCase):
     def test_compile_website(self):
         
         # get current last modified date of the website folder
-        test_scenario = rsScenario("test", "sites.ramseysystems.co.uk")
-        blob = test_scenario.bucket.blob("test/")
-        last_modified = blob.updated
+        test_scenario = rsScenario("_compilewebsite", "sites.ramseysystems.co.uk")
         
-        # compile the website
+        # get folder last modified data
+        old_modified_times = get_files_and_last_modified("_compilewebsite/website/")
         test_scenario.compile_website()
+
+        # get folder last modified data
+        new_modified_times = get_files_and_last_modified("_compilewebsite/website/")
         
-        # check the last modified date has been updated
-        blob = test_scenario.bucket.blob("test/")
-        self.assertNotEqual(blob.updated, last_modified)
+        # check the contents arnt the same
+        self.assertNotEqual(old_modified_times, new_modified_times)
 
+def get_files_and_last_modified(folder_path):
+    # Initialize the client
+    client = storage.Client()
 
+    # Get the bucket
+    bucket = client.get_bucket('sites.ramseysystems.co.uk')
+
+    # Create an iterator for listing objects within the folder
+    blobs_iterator = bucket.list_blobs(folder_path)
+
+    # Create a dictionary to store file objects and their last modified dates
+    file_info = {}
+
+    while True:
+        try:
+            blob = next(blobs_iterator)
+            # Remove the folder path prefix to get the relative file path
+            relative_path = blob.name[len(folder_path):]
+            file_info[relative_path] = blob.updated
+        except StopIteration:
+            break
+
+    return file_info
 
 if __name__ == '__main__':
     unittest.main()

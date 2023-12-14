@@ -475,6 +475,7 @@ class ScenarioTool:
         :return: None
         '''
         # upload patient file
+        
         patient_string = json.dumps(patient_file)
         blob = self.bucket.blob(f'{self.personae_dir}/{patient_name}.json')
         blob.upload_from_string(patient_string)
